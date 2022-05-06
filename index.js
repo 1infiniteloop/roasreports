@@ -96,6 +96,8 @@ const get_customer_ids_type = (ids) => {
     return compact(map((id) => get_id_type(id), ids));
 };
 
+const ClickFunnels = {};
+
 ClickFunnels.user_db_docs = ({ emails, user_id }) => {
     let func_name = "ClickFunnels:user_db_docs";
     console.log(func_name);
@@ -1185,20 +1187,6 @@ let user_id = "aobouNIIRJMSjsDs2dIXAwEKmiY2";
 // let user_id = "8O2p0Rf8jlhWprh9zxFNtdeSUFA3";
 let date = "2022-04-01";
 let now = new Date().getTime();
-
-// Roas({
-//     user_id: "aobouNIIRJMSjsDs2dIXAwEKmiY2",
-//     fb_account_id: "10208987388877755",
-//     fb_access_token:
-//         "EAAMZAIoNa7KYBAFjyZCdkH2JiRZB1JDUjaUTFxWe6MSfGWZACxOVR9wo4KDw3qb5gbsHm3ZBPD4SUxEWIZCEgzSkuVCacZCBOz1b8uyyMYJUGVb8gC9wLWEtZBcBo2mHCt7ibLHawA6y81YrZBalGZC7HDCDwJxJT4IZCCKZC2vICFQxdY2sTfKFZBhsE6ZCxUPxaJD4SwlUdVwGKzQ7CGiKZBZBVw5YzRfspNd5g0Ydp9I9ZAHa8vwZDZD",
-// })
-//     .user.ad_data_from_email({
-//         email: "Preciousblitz78@gmail.com",
-//         shopping_cart_id: "clickfunnels_webhook",
-//         fb_ad_account_id: 1560519410661307,
-//         date: "2022-04-10",
-//     })
-//     .subscribe();
 
 let report_one_query = query(doc(db, "reports", "156051941066130720220416"));
 let report_one_response = from(getDoc(report_one_query)).pipe(rxmap((doc) => doc.data()));
