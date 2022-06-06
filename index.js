@@ -264,7 +264,7 @@ Event.fb_ad_data = async ({ ad_id, date, user_id, fb_ad_account_id } = {}) => {
                 rxmap((asset) => ({ ...asset, ad_name: asset.name })),
                 tap((asset) => Facebook({ user_id }).ad.set({ ...asset, date })),
                 rxmap(pick(["account_id", "campaign_id", "adset_id", "ad_id", "campaign_name", "adset_name", "name"])),
-                rxmap(pipeLog),
+                // rxmap(pipeLog),
                 rxmap((asset) => ({
                     account_id: asset.account_id,
                     campaign_id: asset.details.campaign_id,
@@ -292,7 +292,7 @@ Event.fb_ad_data = async ({ ad_id, date, user_id, fb_ad_account_id } = {}) => {
                           tap((asset) => Facebook({ user_id }).ad.set({ ...asset, date }))
                       )
             ),
-            rxmap(pipeLog),
+            // rxmap(pipeLog),
             rxmap((asset) => ({
                 account_id: asset.account_id,
                 campaign_id: asset.details.campaign_id,
@@ -916,7 +916,7 @@ const Roas = (params = {}) => {
                                 return from(setDoc(doc(db, "reports", chunk.doc_id), chunk, { merge: false })).pipe(rxmap(() => chunk.doc_id));
                             }),
                             tap(() => console.log("campaigns")),
-                            rxmap(pipeLog),
+                            // rxmap(pipeLog),
                             rxmap(of),
                             rxreduce((prev, curr) => [...prev, ...curr]),
                             defaultIfEmpty([])
@@ -927,7 +927,7 @@ const Roas = (params = {}) => {
                                 return from(setDoc(doc(db, "reports", chunk.doc_id), chunk, { merge: false })).pipe(rxmap(() => chunk.doc_id));
                             }),
                             tap(() => console.log("adsets")),
-                            rxmap(pipeLog),
+                            // rxmap(pipeLog),
                             rxmap(of),
                             rxreduce((prev, curr) => [...prev, ...curr]),
                             defaultIfEmpty([])
@@ -938,7 +938,7 @@ const Roas = (params = {}) => {
                                 return from(setDoc(doc(db, "reports", chunk.doc_id), chunk, { merge: false })).pipe(rxmap(() => chunk.doc_id));
                             }),
                             tap(() => console.log("ads")),
-                            rxmap(pipeLog),
+                            // rxmap(pipeLog),
                             rxmap(of),
                             rxreduce((prev, curr) => [...prev, ...curr]),
                             defaultIfEmpty([])
@@ -946,14 +946,14 @@ const Roas = (params = {}) => {
 
                         let customers_doc = from(setDoc(doc(db, "reports", customers_payload.doc_id), customers_payload, { merge: false })).pipe(
                             rxmap(() => customers_payload.doc_id),
-                            tap(() => console.log("customers")),
-                            rxmap(pipeLog)
+                            tap(() => console.log("customers"))
+                            // rxmap(pipeLog)
                         );
 
                         let details_doc = from(setDoc(doc(db, "reports", report_details.doc_id), report_details, { merge: false })).pipe(
                             rxmap(() => report_details.doc_id),
-                            tap(() => console.log("details")),
-                            rxmap(pipeLog)
+                            tap(() => console.log("details"))
+                            // rxmap(pipeLog)
                         );
 
                         return zip([details_doc, customers_doc, campaigns_doc, adsets_doc, ads_doc]).pipe(
@@ -999,8 +999,8 @@ const Roas = (params = {}) => {
 
             let user_events_docs = from(getDocs(user_events_query)).pipe(
                 rxfilter((value) => !isUndefined(value)),
-                rxmap((data) => data.docs.map((doc) => doc.data())),
-                rxmap(pipeLog)
+                rxmap((data) => data.docs.map((doc) => doc.data()))
+                // rxmap(pipeLog)
             );
 
             let shopping_cart_ip_docs = shoping_cart_ip_docs_with_ads_map[shopping_cart_id]({
@@ -1020,8 +1020,8 @@ const Roas = (params = {}) => {
             });
 
             let user_events_response = user_events_docs.pipe(
-                concatMap((events) => Events.ad_data({ events, event_from_type: "user_events_response", email, fb_ad_account_id, user_id, date })),
-                rxmap(pipeLog)
+                concatMap((events) => Events.ad_data({ events, event_from_type: "user_events_response", email, fb_ad_account_id, user_id, date }))
+                // rxmap(pipeLog)
             );
 
             let shopping_cart_ip_response = shopping_cart_ip_docs.pipe(
@@ -1037,7 +1037,7 @@ const Roas = (params = {}) => {
             );
 
             return zip([user_events_response, shopping_cart_ip_response, shopping_cart_email_response]).pipe(
-                rxmap(pipeLog),
+                // rxmap(pipeLog),
                 rxmap(flatten),
                 rxmap(sortBy(prop("timestamp"))),
                 defaultIfEmpty([])
@@ -1063,7 +1063,7 @@ const Roas = (params = {}) => {
             let shopping_cart_email_docs = shoping_cart_user_docs_map[shopping_cart_id]({ emails, user_id });
 
             return zip([users_email_docs, shopping_cart_email_docs]).pipe(
-                rxmap(pipeLog),
+                // rxmap(pipeLog),
                 rxmap(flatten),
                 rxfilter((value) => !isEmpty(value)),
                 rxmap(louniqby("user_id")),
@@ -1183,17 +1183,7 @@ const Roas = (params = {}) => {
 
 // Roas.customer.ad_data_from_email()
 
-let user_id = "aobouNIIRJMSjsDs2dIXAwEKmiY2";
-// let user_id = "8O2p0Rf8jlhWprh9zxFNtdeSUFA3";
-let date = "2022-04-01";
-let now = new Date().getTime();
-
-let report_one_query = query(doc(db, "reports", "156051941066130720220416"));
-let report_one_response = from(getDoc(report_one_query)).pipe(rxmap((doc) => doc.data()));
-let report_two_query = query(doc(db, "reports", "156051941066130720220415"));
-let report_two_response = from(getDoc(report_two_query)).pipe(rxmap((snapshot) => snapshot.docs.map((doc) => doc.data())));
-
-let dates = ["2022-04-26"];
+const queryDocs = (snapshot) => snapshot.docs.map((doc) => ({ ...doc.data(), doc_id: doc.id }));
 
 const Report = {
     utilities: {
@@ -1261,6 +1251,26 @@ const Report = {
                 };
             },
         },
+    },
+
+    delete: (date, user_id) => {
+        let report_query = query(collection(db, "reports"), where("date", "==", date), where("user_id", "==", user_id));
+        return from(getDocs(report_query)).pipe(
+            rxmap(queryDocs),
+            concatMap(identity),
+            concatMap((report) => {
+                let { doc_id } = report;
+                let report_ref = doc(db, "reports", doc_id);
+                return from(deleteDoc(report_ref)).pipe(
+                    rxmap(() => {
+                        return console.log(`deleted report ${doc_id}`);
+                    }),
+                    rxmap(() => {
+                        return doc_id;
+                    })
+                );
+            })
+        );
     },
 
     customers: {
@@ -1355,9 +1365,10 @@ const Report = {
 
             all: (stats) => {
                 let func_name = `Report:asset:stats:all`;
+                // console.log(stats);
                 console.log(func_name);
 
-                let { fbclicks, fbsales, fbleads, fbmade, fbspend, roassales, roascustomers, roasrevenue } = stats;
+                let { fbclicks = 0, fbsales = 0, fbleads = 0, fbmade = 0, fbspend = 0, roassales = 0, roascustomers = 0, roasrevenue = 0 } = stats;
 
                 let fbcustomers = fbsales;
                 let fbrevenue = fbmade;
@@ -1643,10 +1654,12 @@ const Report = {
                 stats: Report.ads.stats(get(all, "stats")(assets)),
             })),
             mergeDeepRight(Report.assets[type_plural]["values"](reports)),
+            // get(matching({ asset_id: "23851090952440006" })),
             mod(all)((asset) => ({
                 ...asset,
                 stats: Report.asset.stats.all(pipe(get("stats"))(asset)),
             }))
+            // pipeLog
             // pipeLog
             // pipeLog
             // (report) => ({
@@ -1660,181 +1673,45 @@ const Report = {
 
 exports.Report = Report;
 
-// from(dates).pipe(
-//     concatMap((date) => {
-//         let report_query = query(collection(db, "reports"), where("date", "==", date), where("user_id", "==", "aobouNIIRJMSjsDs2dIXAwEKmiY2"));
-//         let report_response = from(getDocs(report_query)).pipe(
-//             rxmap((snapshot) => snapshot.docs.map((doc) => doc.data())),
-//             rxmap((payload) => ({
-//                 campaigns: pipe(get(matching({ type: "campaigns" })), get(all, "campaigns"), flatten)(payload),
-//                 // adsets: pipe(get(matching({ type: "adsets" })), get(all, "adsets"), flatten)(payload),
-//                 // ads: pipe(get(matching({ type: "ads" })), get(all, "ads"), flatten)(payload),
-//                 customers: pipe(get(matching({ type: "customers" })), get(all, "customers"), mod(all)(values), flatten)(payload),
-//                 details: pipe(get(matching({ type: "details" })), head)(payload),
-//             })),
-//             rxmap(of)
-//         );
-//         return report_response;
-//     }),
-//     rxreduce((prev, curr) => [...prev, ...curr])
-// )
-// .subscribe((reports) => {
-//     console.log("reportsare");
-//     console.log(reports);
-//     let customers = pipe(
-//         loorderby(["timestamp"], ["desc"]),
-//         logroupby("email"),
-//         mod(all)(head),
-//         values,
-//         mod(all)(({ cart, stats, ...rest }) => mod(all)(({ name, ...item }) => ({ product_name: name, ...item, ...rest }))(cart)),
-//         flatten
-//     )(Report.assets.customers.values(7, reports));
+// let today = moment().format("YYYY-MM-DD");
+// let dates = [today, "2022-06-05", "2022-06-04", "2022-06-03", "2022-06-02", "2022-06-01"];
+// let user_id = "aobouNIIRJMSjsDs2dIXAwEKmiY2";
 
-//     // console.log(reports);
-//     // Report.get("campaigns", 7, reports);
-// });
-
-// zip([report_one_response, report_two_response])
-//     .pipe(rxmap(([one, two]) => [one, two]))
+// from(dates)
+//     .pipe(
+//         concatMap((date) => {
+//             let report_query = query(collection(db, "reports"), where("date", "==", date), where("user_id", "==", user_id));
+//             let report_response = from(getDocs(report_query)).pipe(
+//                 rxmap((snapshot) => snapshot.docs.map((doc) => doc.data())),
+//                 rxmap((payload) => ({
+//                     campaigns: pipe(get(matching({ type: "campaigns" })), get(all, "campaigns"), flatten)(payload),
+//                     // adsets: pipe(get(matching({ type: "adsets" })), get(all, "adsets"), flatten)(payload),
+//                     // ads: pipe(get(matching({ type: "ads" })), get(all, "ads"), flatten)(payload),
+//                     customers: pipe(get(matching({ type: "customers" })), get(all, "customers"), mod(all)(values), flatten)(payload),
+//                     details: pipe(get(matching({ type: "details" })), head)(payload),
+//                 })),
+//                 rxmap(of)
+//             );
+//             return report_response;
+//         }),
+//         rxreduce((prev, curr) => [...prev, ...curr])
+//     )
 //     .subscribe((reports) => {
-//         console.log("reportsresult");
-//         // console.log(reports);
-
-//         let campaigns = pipe(get(all, "campaigns"), mod(all)(values), flatten)(reports);
-//         let adsets = pipe(get(all, "adsets"), mod(all)(values), flatten)(reports);
-//         let ads = pipe(get(all, "ads"), mod(all)(values), flatten)(reports);
-//         let customers = pipe(get(all, "customers"))(reports);
-
-//         // let campaigns_payload = pipe(
-//         //     mod(all)(({ details, ...asset }) => ({ ...details, ...asset })),
-//         //     mod(all)(pick(["campaign_id", "campaign_name", "stats"])),
-//         //     mod(all, "stats")((stats) => ({ ...stats, ...Report.defaults.stats.roas() })),
-//         //     logroupby("campaign_id"),
-//         //     mod(all)((assets) => ({
-//         //         campaign_name: pipe(head, get("campaign_name"))(assets),
-//         //         campaign_id: pipe(head, get("campaign_id"))(assets),
-//         //         stats: Report.assets.stats(pipe(get(all, "stats"))(assets)),
-//         //     })),
-//         //     mod(all)((asset) => ({ ...asset, type: "campaign" }))
-//         // )(campaigns);
-
-//         // let adsets_payload = pipe(
-//         //     mod(all)(({ details, ...asset }) => ({ ...details, ...asset })),
-//         //     mod(all, "stats")((stats) => ({ ...stats, ...Report.defaults.stats.roas() })),
-//         //     mod(all)(pick(["campaign_id", "campaign_name", "adset_id", "adset_name", "stats"])),
-//         //     logroupby("adset_id"),
-//         //     mod(all)((assets) => ({
-//         //         adset_name: pipe(head, get("adset_name"))(assets),
-//         //         adset_id: pipe(head, get("adset_id"))(assets),
-//         //         campaign_id: pipe(head, get("campaign_id"))(assets),
-//         //         campaign_name: pipe(head, get("campaign_name"))(assets),
-//         //         stats: Report.assets.stats(pipe(get(all, "stats"))(assets)),
-//         //     })),
-//         //     mod(all)((asset) => ({ ...asset, type: "adset" }))
-//         // )(adsets);
-
-//         // let ads_payload = pipe(
-//         //     mod(all)(({ details, ...asset }) => ({ ...details, ...asset })),
-//         //     mod(all, "stats")((stats) => ({ ...stats, ...Report.defaults.stats.roas() })),
-//         //     mod(all)(pick(["campaign_id", "campaign_name", "adset_id", "adset_name", "ad_id", "ad_name", "stats"])),
-//         //     logroupby("ad_id"),
-//         //     mod(all)((assets) => ({
-//         //         adset_name: pipe(head, get("adset_name"))(assets),
-//         //         adset_id: pipe(head, get("adset_id"))(assets),
-//         //         campaign_id: pipe(head, get("campaign_id"))(assets),
-//         //         campaign_name: pipe(head, get("campaign_name"))(assets),
-//         //         ad_id: pipe(head, get("ad_id"))(assets),
-//         //         ad_name: pipe(head, get("ad_name"))(assets),
-//         //         stats: Report.assets.stats(pipe(get(all, "stats"))(assets)),
-//         //     })),
-//         //     mod(all)((asset) => ({ ...asset, type: "ad" }))
-//         // )(ads);
-
-//         // let customers_payload = pipe(
-//         //     mod(all)(values),
-//         //     flatten,
+//         console.log("reportsare");
+//         // pipeLog(reports);
+//         // let customers = pipe(
+//         //     loorderby(["timestamp"], ["desc"]),
 //         //     logroupby("email"),
+//         //     mod(all)(head),
 //         //     values,
-//         //     mod(all)(Report.customer.normalize),
-//         //     mod(all)(Report.ads.normalize),
-//         //     mod(all)(Report.ads.get),
-//         //     flatten,
-//         //     mod(all)(
-//         //         pick([
-//         //             "adset_name",
-//         //             "ad_name",
-//         //             "asset_id",
-//         //             "asset_name",
-//         //             "email",
-//         //             "adset_id",
-//         //             "ad_id",
-//         //             "timestamp",
-//         //             "name",
-//         //             "campaign_name",
-//         //             "campaign_id",
-//         //             "cart",
-//         //             "stats",
-//         //         ])
-//         //     ),
-//         //     loorderby(["timestamp"], ["asc"]),
-//         //     mod(all, "email")(toLower)
-//         // )(customers);
+//         //     mod(all)(({ cart, stats, ...rest }) => mod(all)(({ name, ...item }) => ({ product_name: name, ...item, ...rest }))(cart)),
+//         //     flatten
+//         // )(Report.assets.customers.values(7, reports));
 
-//         pipe(
-//             Report.ads.attribution.inside("2022-04-16", 180),
-//             logroupby("email"),
-//             lomap(head),
-//             logroupby("campaign_id"),
-//             mod(all)((assets) => ({
-//                 orders: assets,
-//                 stats: Report.ads.stats(get(all, "stats")(assets)),
-//             })),
-//             mergeDeepRight(campaigns_payload),
-//             mod(matching({ orders: (orders) => !isUndefined(orders) }))((asset) => ({
-//                 ...asset,
-//                 stats: Report.asset.stats.all(pipe(get("stats"))(asset)),
-//             })),
-//             pipeLog
-//         )(customers_payload);
-//     }).subscribe((report) => {
-//     console.log("report");
-//     pipeLog(report);
-
-//     let stats = pipe(
-//         get("customers"),
-//         get(all, "stats"),
-//         values,
-//         mod(all)(({ roasrevenue }) => roasrevenue),
-//         sum
-//     )(report);
-
-//     // pipeLog(stats);
-// });
-
-// from(getDocs(query(collection(db, "reports"), limit(10))))
-//     .pipe(
-//         rxmap((snapshot) => snapshot.docs.map((doc) => ({ doc_id: doc.id }))),
-//         concatMap(identity)
-//     )
-//     .subscribe((report) => {
-//         console.log(report.doc_id);
-//         from(deleteDoc(doc(db, "reports", report.doc_id))).subscribe(() => {
-//             console.log("deleted report", report.doc_id);
-//         });
+//         // console.log(reports);
+//         Report.get("campaigns", 7, reports);
 //     });
 
-// from(getDocs(query(collection(db, "user_events"), limit(10))))
-//     .pipe(
-//         rxmap((snapshot) => snapshot.docs.map((doc) => doc.data())),
-//         concatMap(identity)
-//     )
-//     .subscribe((report) => {
-//         console.log("report");
-//         console.log(report);
-//         // console.log(report.doc_id);
-//         // from(deleteDoc(doc(db, "reports", report.doc_id))).subscribe(() => {
-//         //     console.log("deleted report", report.doc_id);
-//         // });
-//     });
+// Report.delete(today, user_id).subscribe(pipeLog);
 
 exports.Roas = Roas;
